@@ -75,7 +75,7 @@ std::cin >> m >> n >> k;
    cudaMalloc(&d_c, m * k * sizeof(double));
    
    //MEMCPY
-
+   cudaEventRecord(start);
    cudaMemcpy(d_a, h_a.data(), m * n * sizeof(double), cudaMemcpyHostToDevice);
    cudaMemcpy(d_b, h_b.data(), n * k * sizeof(double), cudaMemcpyHostToDevice);
    int BLOCK_SIZE = 32;
@@ -84,11 +84,13 @@ std::cin >> m >> n >> k;
    dim3 dimGrid(grid_cols, grid_rows);
    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
    //GPU RUN
-   cudaEventRecord(start);
+  
    mulMtrx<<<dimGrid, dimBlock>>>(d_a, d_b, d_c, m, n, k);
-   cudaEventRecord(stop);
-   cudaMemcpy(h_c.data(), d_c, m * k * sizeof(double), cudaMemcpyDeviceToHost);
    cudaThreadSynchronize();
+   
+   cudaMemcpy(h_c.data(), d_c, m * k * sizeof(double), cudaMemcpyDeviceToHost);
+   
+   cudaEventRecord(stop);
    cudaEventSynchronize(stop);
    float milliseconds = 0;
    cudaEventElapsedTime(&milliseconds, start, stop);
